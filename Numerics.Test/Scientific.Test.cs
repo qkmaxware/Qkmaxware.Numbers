@@ -25,24 +25,20 @@ namespace Numerics.Test {
         [TestMethod]
         public void TestNormalized() {
             Scientific v1 = new Scientific(14.2, 0);
-            Scientific n1 = v1.Normalized();
-            Assert.AreEqual(1.42, n1.Significand);
-            Assert.AreEqual(1, n1.Exponent);
+            Assert.AreEqual(1.42, v1.Significand);
+            Assert.AreEqual(1, v1.Exponent);
 
             Scientific v2 = new Scientific(0.05);
-            Scientific n2 = v2.Normalized();
-            Assert.AreEqual(5, n2.Significand);
-            Assert.AreEqual(-2, n2.Exponent);
+            Assert.AreEqual(5, v2.Significand);
+            Assert.AreEqual(-2, v2.Exponent);
 
             Scientific v3 = new Scientific(-14.2);
-            Scientific n3 = v3.Normalized();
-            Assert.AreEqual(-1.42, n3.Significand);
-            Assert.AreEqual(1, n3.Exponent);
+            Assert.AreEqual(-1.42, v3.Significand);
+            Assert.AreEqual(1, v3.Exponent);
 
             Scientific v4 = new Scientific(-0.05);
-            Scientific n4 = v4.Normalized();
-            Assert.AreEqual(-5, n4.Significand);
-            Assert.AreEqual(-2, n4.Exponent);
+            Assert.AreEqual(-5, v4.Significand);
+            Assert.AreEqual(-2, v4.Exponent);
         }
 
         [TestMethod]
@@ -51,22 +47,6 @@ namespace Numerics.Test {
             Scientific a1 = v1.Abs();
             Assert.AreEqual(1, a1.Sign);
             Assert.AreEqual(true, a1.Significand > 0);
-        }
-
-        [TestMethod]
-        public void TestSetExponent() {
-            Scientific v1 = new Scientific(145, 0);
-            Scientific v2 = v1.SetExponent(1);
-            Scientific v3 = v1.SetExponent(2);
-            Scientific v4 = v2.SetExponent(2);
-
-            Assert.AreEqual(145, v1.Significand, 0.00005);
-            Assert.AreEqual(14.5, v2.Significand, 0.00005);
-            Assert.AreEqual(1.45, v3.Significand, 0.00005);
-            Assert.AreEqual(1.45, v4.Significand, 0.00005);
-
-            Scientific v5 = new Scientific(1.24, 2).SetExponent(1);
-            Assert.AreEqual(12.4, v5.Significand, 0.00005);
         }
 
         [TestMethod]
@@ -79,8 +59,24 @@ namespace Numerics.Test {
             Assert.AreEqual(2, add1.Exponent);
 
             Scientific sub1 = v1 - v2;
-            Assert.AreEqual(0.21, sub1.Significand, 0.00005);
-            Assert.AreEqual(2, sub1.Exponent);
+            Assert.AreEqual(2.1, sub1.Significand, 0.00005);
+            Assert.AreEqual(1, sub1.Exponent);
+
+            Scientific impl = 360d;
+            Assert.IsNotNull(impl);
+            Assert.AreEqual(3.6, impl.Significand);
+            Assert.AreEqual(2, impl.Exponent);
+
+            Scientific div1 = new Scientific(1000, 0) / impl;
+            Assert.IsNotNull(div1);
+            Assert.AreEqual(0, div1.Exponent);
+            Assert.AreEqual(2.7, (double)div1, 0.1f);
+
+            Scientific floor1 = div1.Floor();
+            Assert.IsNotNull(floor1);
+
+            Scientific mul1 = floor1 * 360;
+            Assert.IsNotNull(mul1);
         }
     }
 }

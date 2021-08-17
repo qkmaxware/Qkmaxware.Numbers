@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace Qkmaxware.Numbers {
     
@@ -33,6 +34,8 @@ public class Scientific {
 	public Scientific (double value, int power = 0) {
 		this.Significand = value;
 		this.Exponent = power;
+
+		normalize();
 	}
 	
 	/// <summary>
@@ -67,7 +70,7 @@ public class Scientific {
 	/// Value represented in normalized scienfific notation
 	/// </summary>
 	/// <returns>normalized scientific notation version of this value</returns>
-	public Scientific Normalized() {
+	private void normalize() {
 		checked {
 			var abs = Math.Abs(this.Significand);
 			var sign = Math.Sign(this.Significand);
@@ -76,7 +79,8 @@ public class Scientific {
 				var powerChange = (int)Math.Floor(Math.Log10((int)abs));
 				var next = abs / Math.Pow(10, powerChange);
 				
-				return new Scientific(sign * next, Exponent + powerChange);
+				this.Significand = sign * next;
+				this.Exponent = Exponent + powerChange;
 			} else if (abs < 1 && abs > 0) {
 				var next = abs;
 				var powerChange = 0;
@@ -84,9 +88,8 @@ public class Scientific {
 					next *= 10;
 					powerChange++;
 				}
-				return new Scientific(sign * next, Exponent - powerChange);
-			} else {
-				return new Scientific(this.Significand, this.Exponent);
+				this.Significand = sign * next;
+				this.Exponent = Exponent - powerChange;
 			}
 		}
 	}
@@ -96,24 +99,15 @@ public class Scientific {
 	/// </summary>
 	/// <param name="x">the new exponent</param>
 	/// <returns>same value with the given exponent</returns>
-	public Scientific SetExponent(int x) {
+	private double setExponent(int x) {
 		checked {
 			if (x == this.Exponent) {
-				return this;
+				return this.Significand;
 			}
 				
 			var difference = this.Exponent - x;
-			return new Scientific(this.Significand * Math.Pow(10, difference), x);
+			return this.Significand * Math.Pow(10, difference);
 		}
-	}
-
-	/// <summary>
-	/// Change the exponent by the given amount without changing the value
-	/// </summary>
-	/// <param name="delta">amount to change</param>
-	/// <returns>same value with the exponent shifted by the given amount</returns>
-	public Scientific ShiftExponent(int delta) {
-		return SetExponent(this.Exponent + delta);
 	}
 	
 	/// <summary>
@@ -129,7 +123,7 @@ public class Scientific {
 	/// </summary>
 	/// <param name="d">value</param>
 	public static implicit operator Scientific(double d) {
-		return new Scientific(d, 0).Normalized();
+		return new Scientific(d, 0);
 	}
 
 	/// <summary>
@@ -166,10 +160,10 @@ public class Scientific {
 	public static Scientific operator + (Scientific lhs, Scientific rhs) {
 		checked {
 			var commonExponent = Math.Max(lhs.Exponent, rhs.Exponent);
-			var rl = lhs.SetExponent(commonExponent);
-			var rr = rhs.SetExponent(commonExponent);
+			var rl = lhs.setExponent(commonExponent);
+			var rr = rhs.setExponent(commonExponent);
 
-			return new Scientific(rl.Significand + rr.Significand, commonExponent);
+			return new Scientific(rl + rr, commonExponent);
 		}
 	}
 	
@@ -179,10 +173,10 @@ public class Scientific {
 	public static Scientific operator - (Scientific lhs, Scientific rhs) {
 		checked {
 			var commonExponent = Math.Max(lhs.Exponent, rhs.Exponent);
-			var rl = lhs.SetExponent(commonExponent);
-			var rr = rhs.SetExponent(commonExponent);
+			var rl = lhs.setExponent(commonExponent);
+			var rr = rhs.setExponent(commonExponent);
 			
-			return new Scientific(rl.Significand - rr.Significand, commonExponent);
+			return new Scientific(rl - rr, commonExponent);
 		}
 	}
 	
@@ -191,11 +185,7 @@ public class Scientific {
 	/// </summary>
 	public static Scientific operator * (Scientific lhs, Scientific rhs) {
 		checked {
-			var commonExponent = Math.Max(lhs.Exponent, rhs.Exponent);
-			var rl = lhs.SetExponent(commonExponent);
-			var rr = rhs.SetExponent(commonExponent);
-			
-			return new Scientific(rl.Significand * rr.Significand, commonExponent);
+			return new Scientific(lhs.Significand * rhs.Significand, lhs.Exponent + rhs.Exponent);
 		}
 	}
 	
@@ -204,12 +194,62 @@ public class Scientific {
 	/// </summary>
 	public static Scientific operator / (Scientific lhs, Scientific rhs) {
 		checked {
-			var commonExponent = Math.Max(lhs.Exponent, rhs.Exponent);
-			var rl = lhs.SetExponent(commonExponent);
-			var rr = rhs.SetExponent(commonExponent);
-			
-			return new Scientific(rl.Significand / rr.Significand, commonExponent);
+			return new Scientific(lhs.Significand / rhs.Significand, lhs.Exponent - rhs.Exponent);
 		}
+	}
+
+	/// <summary>
+	/// Greater than
+	/// </summary>
+	/// <returns>true if the first value is greater than the second</returns>
+	public static bool operator > (Scientific lhs, Scientific rhs) {
+		// Can do this because we are normalized
+		return lhs.Exponent > rhs.Exponent || (lhs.Exponent == rhs.Exponent && lhs.Significand > rhs.Significand);
+	}
+
+	/// <summary>
+	/// Less than
+	/// </summary>
+	/// <returns>true if the first value is less than the second</returns>
+	public static bool operator < (Scientific lhs, Scientific rhs) {
+		// Can do this because we are normalized
+		return lhs.Exponent < rhs.Exponent || (lhs.Exponent == rhs.Exponent && lhs.Significand < rhs.Significand);
+	}
+
+	/// <summary>
+	/// Equality comparison of two scientific numbers
+	/// </summary>
+	/// <param name="lhs">first number</param>
+	/// <param name="rhs">second number</param>
+	/// <returns>true if the two numbers are the same</returns>
+	public static bool operator == (Scientific lhs, Scientific rhs) {
+		// Since values are normalized then we can do this
+		return lhs.Exponent == rhs.Exponent && lhs.Significand == rhs.Significand;
+	}
+	/// <summary>
+	/// Inequality comparison of two scientific numbers
+	/// </summary>
+	/// <param name="lhs">first number</param>
+	/// <param name="rhs">second number</param>
+	/// <returns>true if the two numbers are not the same</returns>
+	public static bool operator != (Scientific lhs, Scientific rhs) {
+		return !(lhs == rhs);
+	}
+
+	// override object.Equals
+	public override bool Equals(object obj) {
+		if (obj == null)
+			return false;
+		if (obj is Scientific sci) {
+			return this == sci; // call the defined == operator
+		} else {
+			return false;
+		}
+	}
+	
+	// override object.GetHashCode
+	public override int GetHashCode() {
+		return HashCode.Combine(this.Significand, this.Exponent);
 	}
 }
 
@@ -219,6 +259,14 @@ public static class RealExtensions {
 	}
 	public static Scientific x10(this double value, int power) {
 		return new Scientific(value, power);
+	}
+
+	public static Arbitrary x10(this long value, int power) {
+		return new Arbitrary(value, power);
+	}
+
+	public static Arbitrary x10(this BigInteger value, int power) {
+		return new Arbitrary(value, power);
 	}
 }
 
