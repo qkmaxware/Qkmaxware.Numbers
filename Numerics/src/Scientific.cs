@@ -6,6 +6,9 @@ namespace Qkmaxware.Numbers {
 /// Double precision number in scientific notation
 /// </summary>
 public class Scientific {
+	public static readonly Scientific Zero = new Scientific(0, 0);
+	public static readonly Scientific One = new Scientific(1, 0);
+
 	/// <summary>
 	/// Significant digits
 	/// </summary>
@@ -38,6 +41,26 @@ public class Scientific {
 	/// <returns>absolute value</returns>
 	public Scientific Abs() {
 		return new Scientific(Math.Abs(this.Significand), this.Exponent);
+	}
+
+	/// <summary>
+	/// Floor of this value
+	/// </summary>
+	/// <returns>floored value</returns>
+	public Scientific Floor() {
+		checked {
+			return new Scientific(Math.Floor(this.Significand), this.Exponent);
+		}
+	}
+
+	/// <summary>
+	/// Ceiling of this value
+	/// </summary>
+	/// <returns>ceiled value</returns>
+	public Scientific Ceil() {
+		checked {
+			return new Scientific(Math.Ceiling(this.Significand), this.Exponent);
+		}
 	}
 
 	/// <summary>
