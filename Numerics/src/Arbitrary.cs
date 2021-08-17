@@ -5,11 +5,13 @@ namespace Qkmaxware.Numbers {
 /// <summary>
 /// Arbitrary precision large Arbitrary number
 /// </summary>
-public struct Arbitrary {
+public struct Arbitrary : ICalulatorProvider<Arbitrary> {
     /// <summary>
     /// A Arbitrary representing 0
     /// </summary>
     public static readonly Arbitrary Zero = new Arbitrary(0,0);
+
+    public ICalculator<Arbitrary> CreateCalculator() => new ArbitraryCalculator();
 
     /// <summary>
     /// Digits in the mantissa
@@ -242,6 +244,10 @@ public struct Arbitrary {
 
     public static explicit operator uint(Arbitrary value) {
         return (uint)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+    }
+
+    public static explicit operator Scientific(Arbitrary value) {
+        return new Scientific((int)value.Mantissa, value.Exponent);
     }
 
     #endregion

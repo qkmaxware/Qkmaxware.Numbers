@@ -6,9 +6,11 @@ namespace Qkmaxware.Numbers {
 /// <summary>
 /// Double precision number in scientific notation
 /// </summary>
-public class Scientific {
+public class Scientific : ICalulatorProvider<Scientific> {
 	public static readonly Scientific Zero = new Scientific(0, 0);
 	public static readonly Scientific One = new Scientific(1, 0);
+
+	public ICalculator<Scientific> CreateCalculator() => new ScientificCalculator();
 
 	/// <summary>
 	/// Significant digits
@@ -134,6 +136,15 @@ public class Scientific {
 		checked {
 			return value.Significand * Math.Pow(10, value.Exponent);
 		}
+	}
+
+	/// <summary>
+	/// Implicly upcast to an arbitrary
+	/// </summary>
+	/// <param name="value">value in scientific notation</param>
+	public static implicit operator Arbitrary(Scientific value) {
+		// Convert significand * (1*10^exponent)
+		return ((Arbitrary)(value.Significand)) * (new Arbitrary(1, value.Exponent));
 	}
 	
 	/// <summary>
