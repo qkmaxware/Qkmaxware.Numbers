@@ -52,7 +52,7 @@ public class Scientific {
 	/// <returns>floored value</returns>
 	public Scientific Floor() {
 		checked {
-			return new Scientific(Math.Floor(this.Significand), this.Exponent);
+			return new Scientific(Math.Floor((double)this), 0);
 		}
 	}
 
@@ -62,7 +62,7 @@ public class Scientific {
 	/// <returns>ceiled value</returns>
 	public Scientific Ceil() {
 		checked {
-			return new Scientific(Math.Ceiling(this.Significand), this.Exponent);
+			return new Scientific(Math.Ceiling((double)this), 0);
 		}
 	}
 
