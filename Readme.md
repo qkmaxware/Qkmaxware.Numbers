@@ -5,5 +5,5 @@ Qkmaxware.Numbers is a library for dealing with numbers. Scientific notation, ar
 - Normalized scientific notation 
 - Arbitrary precision arithmetic
 - Fractions
-  - Requires "Calculator" support
+- Generic 3d Vector
 - Number system conversion

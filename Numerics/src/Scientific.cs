@@ -6,11 +6,9 @@ namespace Qkmaxware.Numbers {
 /// <summary>
 /// Double precision number in scientific notation
 /// </summary>
-public class Scientific : ICalulatorProvider<Scientific> {
+public class Scientific : INumeric<Scientific> {
 	public static readonly Scientific Zero = new Scientific(0, 0);
 	public static readonly Scientific One = new Scientific(1, 0);
-
-	public ICalculator<Scientific> CreateCalculator() => new ScientificCalculator();
 
 	/// <summary>
 	/// Significant digits
@@ -225,6 +223,37 @@ public class Scientific : ICalulatorProvider<Scientific> {
 	public static bool operator < (Scientific lhs, Scientific rhs) {
 		// Can do this because we are normalized
 		return lhs.Exponent < rhs.Exponent || (lhs.Exponent == rhs.Exponent && lhs.Significand < rhs.Significand);
+	}
+
+	public Scientific Negate() {
+        return -this;
+    }
+
+    public Scientific Add(Scientific rhs) {
+        return this + rhs;
+    }
+
+    public Scientific Subtract(Scientific rhs) {
+        return this - rhs;
+    }
+
+    public Scientific MultiplyBy(Scientific rhs) {
+        return this * rhs;
+    }
+
+    public Scientific DivideBy(Scientific rhs) {
+        return this / rhs;
+    }
+
+	public Scientific Sqrt() {
+		if (this.Exponent.IsEven()) {
+			// if n is even just take the square root of x and 10^n and multiply them
+			return new Scientific(Math.Sqrt(this.Significand), this.Exponent / 2);
+		} else {
+			// if n is odd, mutiply x by 10 and reduce n by 1 to make it even and then take square root of each and multiply them
+			return new Scientific(Math.Sqrt(this.Significand * 10), (this.Exponent - 1)/2);
+		}
+		
 	}
 
 	/// <summary>

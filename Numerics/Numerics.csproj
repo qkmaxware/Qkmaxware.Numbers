@@ -6,7 +6,7 @@
 
     <PackageId>Qkmaxware.Numbers</PackageId>
     <PackageName>Qkmaxware.Numbers</PackageName>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <Authors>Colin Halseth</Authors>
     <PackageTags>number systems, scientific notation, arbitrary precision</PackageTags>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>

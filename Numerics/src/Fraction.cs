@@ -6,9 +6,8 @@ namespace Qkmaxware.Numbers {
 /// Fraction representation using calculators to perform computations
 /// </summary>
 /// <typeparam name="T">Numeric type</typeparam>
-public class Fraction<T> {
+public class Fraction<T> where T:IAddable<T, T>, ISubtractable<T,T>, IDividable<T,T>, IMultiplyable<T,T> {
 
-    private ICalculator<T> calculator;
     /// <summary>
     /// The numerator in the fraction
     /// </summary>
@@ -26,44 +25,43 @@ public class Fraction<T> {
     /// <param name="numerator">Fraction numerator</param>
     /// <param name="denominator">Fraction denominator</param>
     public Fraction(T numerator, T denominator) {
-        this.calculator = numerator.GetCalculator() ?? denominator.GetCalculator();
         this.Numerator = numerator;
         this.Denominator = denominator;
     }
 
     public static Fraction<T> operator + (Fraction<T> lhs, Fraction<T> rhs) {
-        var tl = lhs.calculator.Multiply(lhs.Numerator, rhs.Denominator);
-        var tr = rhs.calculator.Multiply(rhs.Numerator, lhs.Denominator);
-        var bottom = lhs.calculator.Multiply(lhs.Denominator, rhs.Denominator);
+        var tl = lhs.Numerator.MultiplyBy(rhs.Denominator);
+        var tr = rhs.Numerator.MultiplyBy(lhs.Denominator);
+        var bottom = lhs.Denominator.MultiplyBy(rhs.Denominator);
 
         return new Fraction<T>(
-           lhs.calculator.Add(tl, tr),
+           tl.Add(tr),
            bottom
         );
     }
 
     public static Fraction<T> operator - (Fraction<T> lhs, Fraction<T> rhs) {
-        var tl = lhs.calculator.Multiply(lhs.Numerator, rhs.Denominator);
-        var tr = rhs.calculator.Multiply(rhs.Numerator, lhs.Denominator);
-        var bottom = lhs.calculator.Multiply(lhs.Denominator, rhs.Denominator);
+        var tl = lhs.Numerator.MultiplyBy(rhs.Denominator);
+        var tr = rhs.Numerator.MultiplyBy(lhs.Denominator);
+        var bottom = lhs.Denominator.MultiplyBy(rhs.Denominator);
 
         return new Fraction<T>(
-           lhs.calculator.Subtract(tl, tr),
+            tl.Subtract(tr),
            bottom
         );
     }
 
     public static Fraction<T> operator / (Fraction<T> lhs, Fraction<T> rhs) {
         return new Fraction<T>(
-            lhs.calculator.Multiply(lhs.Numerator, rhs.Denominator),
-            lhs.calculator.Multiply(lhs.Denominator, rhs.Numerator)
+            lhs.Numerator.MultiplyBy(rhs.Denominator),
+            lhs.Denominator.MultiplyBy(rhs.Numerator)
         );
     }
 
     public static Fraction<T> operator * (Fraction<T> lhs, Fraction<T> rhs) {
         return new Fraction<T>(
-            lhs.calculator.Multiply(lhs.Numerator, rhs.Numerator),
-            lhs.calculator.Multiply(lhs.Denominator, rhs.Denominator)
+            lhs.Numerator.MultiplyBy(rhs.Numerator),
+            lhs.Denominator.MultiplyBy(rhs.Denominator)
         );
     }
 
@@ -72,7 +70,7 @@ public class Fraction<T> {
     /// </summary>
     /// <param name="value">fraction</param>
     public static explicit operator T (Fraction<T> value) {
-        return value.calculator.Divide(value.Numerator, value.Denominator);
+        return value.Numerator.DivideBy(value.Denominator);
     }
 
     public override string ToString() {

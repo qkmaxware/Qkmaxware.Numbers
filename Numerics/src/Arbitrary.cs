@@ -5,13 +5,16 @@ namespace Qkmaxware.Numbers {
 /// <summary>
 /// Arbitrary precision large Arbitrary number
 /// </summary>
-public struct Arbitrary : ICalulatorProvider<Arbitrary> {
+public struct Arbitrary : INumeric<Arbitrary> {
     /// <summary>
     /// A Arbitrary representing 0
     /// </summary>
     public static readonly Arbitrary Zero = new Arbitrary(0,0);
 
-    public ICalculator<Arbitrary> CreateCalculator() => new ArbitraryCalculator();
+    /// <summary>
+    /// A Arbitrary representing 1
+    /// </summary>
+    public static readonly Arbitrary One = new Arbitrary(1,0);
 
     /// <summary>
     /// Digits in the mantissa
@@ -337,6 +340,69 @@ public struct Arbitrary : ICalulatorProvider<Arbitrary> {
             return (Mantissa.GetHashCode()*397) ^ Exponent;
         }
     }
+
+    public Arbitrary Negate() {
+        return -this;
+    }
+
+    public Arbitrary Add(Arbitrary rhs) {
+        return this + rhs;
+    }
+
+    public Arbitrary Subtract(Arbitrary rhs) {
+        return this - rhs;
+    }
+
+    public Arbitrary MultiplyBy(Arbitrary rhs) {
+        return this * rhs;
+    }
+
+    public Arbitrary DivideBy(Arbitrary rhs) {
+        return this / rhs;
+    }
+
+    // Source: http://mjs5.com/2016/01/20/c-biginteger-square-root-function/  Michael Steiner, Jan 2016
+    // Found at https://stackoverflow.com/questions/3432412/calculate-square-root-of-a-biginteger-system-numerics-biginteger/6084813
+    private static BigInteger BigintSqrt(BigInteger number){
+        if (number < 9) {
+            if (number == 0)
+                return 0;
+            if (number < 4)
+                return 1;
+            else
+                return 2;
+        }
+
+        BigInteger n = 0, p = 0;
+        var high = number >> 1;
+        var low = BigInteger.Zero;
+
+        while (high > low + 1) {
+            n = (high + low) >> 1;
+            p = n * n;
+            if (number < p) {
+                high = n;
+            }
+            else if (number > p) {
+                low = n;
+            }
+            else {
+                break;
+            }
+        }
+        return number == p ? n : low;
+    }
+
+    public Arbitrary Sqrt() {
+		if (this.Exponent.IsEven()) {
+			// if n is even just take the square root of x and 10^n and multiply them
+			return new Arbitrary(BigintSqrt(this.Mantissa), this.Exponent / 2);
+		} else {
+			// if n is odd, mutiply x by 10 and reduce n by 1 to make it even and then take square root of each and multiply them
+			return new Arbitrary(BigintSqrt(this.Mantissa * 10), (this.Exponent - 1)/2);
+		}
+		
+	}
 
     public static bool operator ==(Arbitrary left, Arbitrary right) {
         return left.Exponent == right.Exponent && left.Mantissa == right.Mantissa;
