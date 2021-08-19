@@ -53,6 +53,15 @@ public interface IMultiplyable<I, R> {
 }
 
 /// <summary>
+/// Type can be multiplied by a scalar value
+/// </summary>
+/// <typeparam name="I">Type of scalar value</typeparam>
+/// <typeparam name="R">Result type</typeparam>
+public interface IScaleble<I, R> {
+    R ScaleBy(I lhs);
+}
+
+/// <summary>
 /// Interface for numerics types that support all basic arithmetic operators
 /// </summary>
 /// <typeparam name="T">arithmetic type</typeparam>
