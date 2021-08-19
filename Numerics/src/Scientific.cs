@@ -72,6 +72,18 @@ public class Scientific : INumeric<Scientific> {
 	/// <returns>normalized scientific notation version of this value</returns>
 	private void normalize() {
 		checked {
+			// Guards
+			if (double.IsInfinity(this.Significand)) {
+				this.Exponent = 0;
+				return;
+			} else if (double.IsNaN(this.Significand)) {
+				return;
+			} else if (this.Significand == 0) {
+				this.Exponent = 0;
+				return;
+			}
+
+			// Normalize
 			var abs = Math.Abs(this.Significand);
 			var sign = Math.Sign(this.Significand);
 			
