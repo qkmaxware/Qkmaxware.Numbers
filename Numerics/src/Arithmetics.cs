@@ -57,7 +57,7 @@ public interface IMultiplyable<I, R> {
 /// </summary>
 /// <typeparam name="I">Type of scalar value</typeparam>
 /// <typeparam name="R">Result type</typeparam>
-public interface IScaleble<I, R> {
+public interface IScalable<I, R> {
     R ScaleBy(I lhs);
 }
 

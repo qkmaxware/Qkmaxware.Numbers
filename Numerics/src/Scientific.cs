@@ -6,7 +6,7 @@ namespace Qkmaxware.Numbers {
 /// <summary>
 /// Double precision number in scientific notation
 /// </summary>
-public class Scientific : INumeric<Scientific> {
+public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific> {
 	public static readonly Scientific Zero = new Scientific(0, 0);
 	public static readonly Scientific One = new Scientific(1, 0);
 
@@ -236,6 +236,8 @@ public class Scientific : INumeric<Scientific> {
 		// Can do this because we are normalized
 		return lhs.Exponent < rhs.Exponent || (lhs.Exponent == rhs.Exponent && lhs.Significand < rhs.Significand);
 	}
+
+	public Scientific ScaleBy(Scientific value) => MultiplyBy(value);
 
 	public Scientific Negate() {
         return -this;
