@@ -31,11 +31,45 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 	/// </summary>
 	/// <param name="value">significant digits</param>
 	/// <param name="power">power of 10</param>	
-	public Scientific (double value, int power = 0) {
+	public Scientific (double value, int power = 0) : this(value, power, true) {}
+
+	/// <summary>
+	/// Create a new scientific number
+	/// </summary>
+	/// <param name="value">significant digits</param>
+	/// <param name="power">power of 10</param>	
+	/// <param name="forceNormalize">true to normalize the value, false if significant digits are already normalized</param>
+	private Scientific(double value, int power, bool forceNormalize) {
 		this.Significand = value;
 		this.Exponent = power;
 
-		normalize();
+		if (forceNormalize) {
+			normalize();
+		}
+	}
+
+	/// <summary>
+	/// Check if the value is 0
+	/// </summary>
+	/// <returns>true if 0</returns>
+	public bool IsZero() {
+		return this.Significand == 0;
+	}
+
+	/// <summary>
+	/// Check if the value is infinity
+	/// </summary>
+	/// <returns>true if infinity</returns>
+	public bool IsInfinity() {
+		return double.IsInfinity(this.Significand);
+	}
+
+	/// <summary>
+	/// Check if the value is NaN
+	/// </summary>
+	/// <returns>true if NaN</returns>
+	public bool IsNaN() {
+		return double.IsNaN(this.Significand);
 	}
 	
 	/// <summary>
@@ -84,25 +118,9 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 			}
 
 			// Normalize
-			var abs = Math.Abs(this.Significand);
-			var sign = Math.Sign(this.Significand);
-			
-			if (abs >= 1) {
-				var powerChange = (int)Math.Floor(Math.Log10((int)abs));
-				var next = abs / Math.Pow(10, powerChange);
-				
-				this.Significand = sign * next;
-				this.Exponent = Exponent + powerChange;
-			} else if (abs < 1 && abs > 0) {
-				var next = abs;
-				var powerChange = 0;
-				while((int)next == 0) {
-					next *= 10;
-					powerChange++;
-				}
-				this.Significand = sign * next;
-				this.Exponent = Exponent - powerChange;
-			}
+			var exp = (int)Math.Floor(Math.Log10(Math.Abs(this.Significand)));
+			this.Significand /= Math.Pow(10, exp);
+			this.Exponent += exp;
 		}
 	}
 	
@@ -120,6 +138,15 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 			var difference = this.Exponent - x;
 			return this.Significand * Math.Pow(10, difference);
 		}
+	}
+
+	/// <summary>
+	/// Multiply by 10^x by shifting the exponent
+	/// </summary>
+	/// <param name="x">Amount so shift the exponent by</param>
+	/// <returns>New scientific </returns>
+	public Scientific x10(int x) {
+		return new Scientific(this.Significand, this.Exponent + x, false); // Don't normalize as it should still be normalized
 	}
 	
 	/// <summary>
@@ -278,7 +305,7 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 	/// <returns>true if the two numbers are the same</returns>
 	public static bool operator == (Scientific lhs, Scientific rhs) {
 		// Since values are normalized then we can do this
-		return lhs.Exponent == rhs.Exponent && lhs.Significand == rhs.Significand;
+		return lhs.Equals(rhs);
 	}
 	/// <summary>
 	/// Inequality comparison of two scientific numbers
@@ -287,15 +314,15 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 	/// <param name="rhs">second number</param>
 	/// <returns>true if the two numbers are not the same</returns>
 	public static bool operator != (Scientific lhs, Scientific rhs) {
-		return !(lhs == rhs);
+		return !lhs.Equals(rhs);
 	}
 
 	// override object.Equals
 	public override bool Equals(object obj) {
 		if (obj == null)
 			return false;
-		if (obj is Scientific sci) {
-			return this == sci; // call the defined == operator
+		if (obj is Scientific rhs) {
+			return this.Exponent == rhs.Exponent && this.Significand == rhs.Significand;
 		} else {
 			return false;
 		}

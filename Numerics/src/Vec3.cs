@@ -208,7 +208,19 @@ public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, I
         );
     }
 
+    public static bool operator == (Vec3<T> lhs, Vec3<T> rhs) {
+        return lhs.Equals(rhs);
+    }
+
+    public static bool operator != (Vec3<T> lhs, Vec3<T> rhs) {
+        return !lhs.Equals(rhs);
+    }
+
     public override bool Equals(object obj) {
+        if (ReferenceEquals(obj, null)) {
+            return false;
+        }
+        
         if (obj is Vec3<T> vec) {
             return this.X.Equals(vec.X) && this.Y.Equals(vec.Y) && this.Z.Equals(vec.Z);
         } else {
