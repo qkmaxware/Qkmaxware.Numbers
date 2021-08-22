@@ -5,7 +5,7 @@ namespace Qkmaxware.Numbers {
 /// <summary>
 /// Arbitrary precision large Arbitrary number
 /// </summary>
-public struct Arbitrary : INumeric<Arbitrary> {
+public struct Arbitrary : INumeric<Arbitrary>, IScalable<Arbitrary,Arbitrary> {
     /// <summary>
     /// A Arbitrary representing 0
     /// </summary>
@@ -17,10 +17,10 @@ public struct Arbitrary : INumeric<Arbitrary> {
     public static readonly Arbitrary One = new Arbitrary(1,0);
 
     /// <summary>
-    /// Digits in the mantissa
+    /// Digits in the significand
     /// </summary>
     /// <value>digits</value>
-    public BigInteger Mantissa {get; private set;}
+    public BigInteger Significand {get; private set;}
 
     /// <summary>
     /// Exponent applied as a power of 10
@@ -54,35 +54,60 @@ public struct Arbitrary : INumeric<Arbitrary> {
     /// </summary>
     /// <returns>number without the whole part</returns>
     public Arbitrary FractionalPart() => this - WholePart();
-    
+    /// <summary>
+	/// Sign of the value
+	/// </summary>
+	/// <returns>sign -1, 0, 1 for negative, 0, or positive</returns>
+    public int Sign => this.Significand.Sign;
+
     /// <summary>
     /// Create a new Arbitrary
     /// </summary>
     /// <param name="mantissa">digits in the mantissa</param>
     /// <param name="exponent">exponent as a power of 10</param>
-    public Arbitrary(BigInteger mantissa, int exponent) {
+    public Arbitrary(BigInteger mantissa, int exponent = 0) : this(mantissa, exponent, true) {}
+
+    private Arbitrary(BigInteger mantissa, int exponent, bool normalize) {
         // Assign base values
-        this.Mantissa = mantissa;
+        this.Significand = mantissa;
         this.Exponent = exponent;
 
         // Normalize
-        if (this.Mantissa.IsZero) {
+        if (this.Significand.IsZero) {
             this.Exponent = 0;
         } else {
-            BigInteger remainder = 0;
-            while (remainder == 0) {
-                var shortened = BigInteger.DivRem(dividend: this.Mantissa, divisor: 10, out remainder);
-                if (!remainder.IsZero) {
-                    continue;
+            if (normalize) {
+                BigInteger remainder = 0;
+                while (remainder == 0) {
+                    var shortened = BigInteger.DivRem(dividend: this.Significand, divisor: 10, out remainder);
+                    if (!remainder.IsZero) {
+                        continue;
+                    }
+                    this.Significand = shortened;
+                    this.Exponent++;
                 }
-                this.Mantissa = shortened;
-                this.Exponent++;
             }
         }
 
         // Compute metrics
-        this.Precision = digits(Mantissa) + Math.Max(0, Exponent);
+        this.Precision = digits(Significand) + Math.Max(0, Exponent);
         this.Scale = Math.Abs(Math.Min(0, Exponent));
+    }
+
+    /// <summary>
+	/// Check if the value is 0
+	/// </summary>
+	/// <returns>true if 0</returns>s
+    public bool IsZero() {
+        return this.Significand.IsZero;
+    }
+
+    /// <summary>
+	/// Absolute value of this number
+	/// </summary>
+	/// <returns>absolute value</returns>
+    public Arbitrary Abs() {
+        return new Arbitrary(BigInteger.Abs(this.Significand), this.Exponent, normalize: false); // Value already normalized
     }
 
     /// <summary>
@@ -92,7 +117,7 @@ public struct Arbitrary : INumeric<Arbitrary> {
     /// <returns>Arbitrary</returns>
     public Arbitrary SetPrecision(int digits_precision) {
         var shortened = this;
-        var mantissa = this.Mantissa;
+        var mantissa = this.Significand;
         var exp = this.Exponent;
         // remove the least significant digits, as long as the number of digits is higher than the given Precision
         var current_digits = digits(mantissa);
@@ -110,7 +135,7 @@ public struct Arbitrary : INumeric<Arbitrary> {
     /// <param name="decimals">number of decimals</param>
     /// <returns>Rounded Arbitrary</returns>
     public Arbitrary SetScale(int decimals) {
-        var whole_digits = digits(Mantissa) + Exponent;
+        var whole_digits = digits(Significand) + Exponent;
         var whole_with_decimals = whole_digits + decimals;
         return this.SetPrecision(whole_with_decimals);
     }
@@ -141,7 +166,7 @@ public struct Arbitrary : INumeric<Arbitrary> {
     /// </summary>
     /// <returns>BigInteger</returns>
     public BigInteger FloorToInt() {
-        return Floor().Mantissa;
+        return Floor().Significand;
     }
 
     /// <summary>
@@ -162,11 +187,20 @@ public struct Arbitrary : INumeric<Arbitrary> {
     /// </summary>
     /// <returns>BigInteger</returns>
     public BigInteger CeilToInt() {
-        return Ceil().Mantissa;
+        return Ceil().Significand;
+    }
+
+    /// <summary>
+	/// Multiply by 10^x by shifting the exponent
+	/// </summary>
+	/// <param name="x">Amount so shift the exponent by</param>
+	/// <returns>New scientific </returns>
+    public Arbitrary x10(int x) {
+        return new Arbitrary(this.Significand, this.Exponent + x, normalize: false); // Value already normalized
     }
 
     public override string ToString() {
-        return this.Mantissa.ToString() + "E" + this.Exponent;
+        return this.Significand.ToString() + "E" + this.Exponent;
     }
     
     #region utilites
@@ -184,7 +218,7 @@ public struct Arbitrary : INumeric<Arbitrary> {
     }
 
     private static BigInteger AlignExponent(Arbitrary value, Arbitrary reference) {
-        return value.Mantissa * BigInteger.Pow(10, value.Exponent - reference.Exponent);
+        return value.Significand * BigInteger.Pow(10, value.Exponent - reference.Exponent);
     }
 
     #endregion
@@ -226,7 +260,7 @@ public struct Arbitrary : INumeric<Arbitrary> {
     #region explicit unboxing
 
     public static explicit operator double(Arbitrary value) {
-        return (double)value.Mantissa * Math.Pow(10, value.Exponent);
+        return (double)value.Significand * Math.Pow(10, value.Exponent);
     }
 
     public static explicit operator float(Arbitrary value) {
@@ -234,23 +268,23 @@ public struct Arbitrary : INumeric<Arbitrary> {
     }
 
     public static explicit operator decimal(Arbitrary value) {
-        return (decimal)value.Mantissa * (decimal)Math.Pow(10, value.Exponent);
+        return (decimal)value.Significand * (decimal)Math.Pow(10, value.Exponent);
     }
 
     public static explicit operator int(Arbitrary value) {
-        return (int)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+        return (int)(value.Significand * BigInteger.Pow(10, value.Exponent));
     }
 
     public static explicit operator BigInteger(Arbitrary value) {
-        return (BigInteger)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+        return (BigInteger)(value.Significand * BigInteger.Pow(10, value.Exponent));
     }
 
     public static explicit operator uint(Arbitrary value) {
-        return (uint)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+        return (uint)(value.Significand * BigInteger.Pow(10, value.Exponent));
     }
 
     public static explicit operator Scientific(Arbitrary value) {
-        return new Scientific((int)value.Mantissa, value.Exponent);
+        return new Scientific((int)value.Significand, value.Exponent);
     }
 
     #endregion
@@ -262,7 +296,7 @@ public struct Arbitrary : INumeric<Arbitrary> {
     }
 
     public static Arbitrary operator -(Arbitrary value) {
-        return new Arbitrary(value.Mantissa * -1, value.Exponent);
+        return new Arbitrary(value.Significand * -1, value.Exponent);
     }
 
     public static Arbitrary operator ++(Arbitrary value) {
@@ -283,15 +317,16 @@ public struct Arbitrary : INumeric<Arbitrary> {
 
     private static Arbitrary add(Arbitrary left, Arbitrary right) {
         return left.Exponent > right.Exponent
-            ? new Arbitrary(AlignExponent(left, right) + right.Mantissa, right.Exponent)
-            : new Arbitrary(AlignExponent(right, left) + left.Mantissa, left.Exponent);
+            ? new Arbitrary(AlignExponent(left, right) + right.Significand, right.Exponent)
+            : new Arbitrary(AlignExponent(right, left) + left.Significand, left.Exponent);
     }
 
     public static Arbitrary operator *(Arbitrary left, Arbitrary right){
-        return new Arbitrary(left.Mantissa * right.Mantissa, left.Exponent + right.Exponent);
+        return new Arbitrary(left.Significand * right.Significand, left.Exponent + right.Exponent);
     }
 
     public static Arbitrary operator /(Arbitrary dividend, Arbitrary divisor) {
+        //var sigFigs = Math.Min(dividend.Scale, divisor.Scale);
         return dividend.Divide(divisor, DefaultDivisionScale);
     }
 
@@ -304,7 +339,7 @@ public struct Arbitrary : INumeric<Arbitrary> {
     public Arbitrary Divide(Arbitrary divisor, int scale) {
         var exponentChange = (scale + Math.Max(this.Exponent, 0)) - this.Scale;
         return new Arbitrary(
-            (this.Mantissa * BigInteger.Pow(10, exponentChange)) / divisor.Mantissa, 
+            (this.Significand * BigInteger.Pow(10, exponentChange)) / divisor.Significand, 
             this.Exponent - divisor.Exponent - exponentChange
         );
     }
@@ -325,7 +360,7 @@ public struct Arbitrary : INumeric<Arbitrary> {
     #region comparisons
 
     public bool Equals(Arbitrary other) {
-        return other.Mantissa.Equals(Mantissa) && other.Exponent == Exponent;
+        return other.Significand.Equals(Significand) && other.Exponent == Exponent;
     }
 
     public override bool Equals(object obj) {
@@ -337,9 +372,11 @@ public struct Arbitrary : INumeric<Arbitrary> {
 
     public override int GetHashCode() {
         unchecked {
-            return (Mantissa.GetHashCode()*397) ^ Exponent;
+            return (Significand.GetHashCode()*397) ^ Exponent;
         }
     }
+
+    public Arbitrary ScaleBy(Arbitrary value) => MultiplyBy(value);
 
     public Arbitrary Negate() {
         return -this;
@@ -394,38 +431,50 @@ public struct Arbitrary : INumeric<Arbitrary> {
     }
 
     public Arbitrary Sqrt() {
-		if (this.Exponent.IsEven()) {
-			// if n is even just take the square root of x and 10^n and multiply them
-			return new Arbitrary(BigintSqrt(this.Mantissa), this.Exponent / 2);
-		} else {
-			// if n is odd, mutiply x by 10 and reduce n by 1 to make it even and then take square root of each and multiply them
-			return new Arbitrary(BigintSqrt(this.Mantissa * 10), (this.Exponent - 1)/2);
-		}
-		
+		return this.Sqrt(DefaultDivisionScale);	
 	}
 
+    public Arbitrary Sqrt(int scale) {
+        var exponentChange = (scale + Math.Max(this.Exponent, 0)) - this.Scale;
+
+        var newSignificand = this.Significand * BigInteger.Pow(10, exponentChange); // append decimals
+        var newExponent = this.Exponent - exponentChange;
+
+        if (newExponent.IsEven()) {
+			// if n is even just take the square root of x and 10^n and multiply them
+			var sqrt = new Arbitrary(BigintSqrt(newSignificand), newExponent / 2);
+            //Console.WriteLine($"{this.Significand}E{this.Exponent} === {newSignificand}E{newExponent} -> {sqrt}");
+            return sqrt;
+		} else {
+			// if n is odd, mutiply x by 10 and reduce n by 1 to make it even and then take square root of each and multiply them
+			var sqrt = new Arbitrary(BigintSqrt(newSignificand * 10), (newExponent - 1)/2);
+            //Console.WriteLine($"{this.Significand}E{this.Exponent} === {newSignificand}E{newExponent} -> {sqrt}");
+            return sqrt;
+		}
+    }
+
     public static bool operator ==(Arbitrary left, Arbitrary right) {
-        return left.Exponent == right.Exponent && left.Mantissa == right.Mantissa;
+        return left.Exponent == right.Exponent && left.Significand == right.Significand;
     }
 
     public static bool operator !=(Arbitrary left, Arbitrary right) {
-        return left.Exponent != right.Exponent || left.Mantissa != right.Mantissa;
+        return left.Exponent != right.Exponent || left.Significand != right.Significand;
     }
 
     public static bool operator <(Arbitrary left, Arbitrary right) {
-        return left.Exponent > right.Exponent ? AlignExponent(left, right) < right.Mantissa : left.Mantissa < AlignExponent(right, left);
+        return left.Exponent > right.Exponent ? AlignExponent(left, right) < right.Significand : left.Significand < AlignExponent(right, left);
     }
 
     public static bool operator >(Arbitrary left, Arbitrary right) {
-        return left.Exponent > right.Exponent ? AlignExponent(left, right) > right.Mantissa : left.Mantissa > AlignExponent(right, left);
+        return left.Exponent > right.Exponent ? AlignExponent(left, right) > right.Significand : left.Significand > AlignExponent(right, left);
     }
 
     public static bool operator <=(Arbitrary left, Arbitrary right) {
-        return left.Exponent > right.Exponent ? AlignExponent(left, right) <= right.Mantissa : left.Mantissa <= AlignExponent(right, left);
+        return left.Exponent > right.Exponent ? AlignExponent(left, right) <= right.Significand : left.Significand <= AlignExponent(right, left);
     }
 
     public static bool operator >=(Arbitrary left, Arbitrary right) {
-        return left.Exponent > right.Exponent ? AlignExponent(left, right) >= right.Mantissa : left.Mantissa >= AlignExponent(right, left);
+        return left.Exponent > right.Exponent ? AlignExponent(left, right) >= right.Significand : left.Significand >= AlignExponent(right, left);
     }
 
     #endregion

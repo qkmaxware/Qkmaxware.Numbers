@@ -51,7 +51,7 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 	/// <summary>
 	/// Check if the value is 0
 	/// </summary>
-	/// <returns>true if 0</returns>
+	/// <returns>true if 0</returns>s
 	public bool IsZero() {
 		return this.Significand == 0;
 	}

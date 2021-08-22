@@ -9,7 +9,7 @@ public class ArbitraryTest {
     public void TestConstuctor() {
         var real = new Arbitrary(144, -2);
 
-        Assert.AreEqual(144, real.Mantissa);
+        Assert.AreEqual(144, real.Significand);
         Assert.AreEqual(-2, real.Exponent);
         Assert.AreEqual("144E-2", real.ToString());
         Assert.AreEqual(1.44, (double)real, 0.00001);
@@ -19,7 +19,7 @@ public class ArbitraryTest {
     public void TestConvertInt() {
         Arbitrary real = 8;
 
-        Assert.AreEqual(8, real.Mantissa);
+        Assert.AreEqual(8, real.Significand);
         Assert.AreEqual(0, real.Exponent);
         Assert.AreEqual("8E0", real.ToString());
         Assert.AreEqual(8, (int)real, 0.00001);
@@ -29,7 +29,7 @@ public class ArbitraryTest {
     public void TestConvertDouble() {
         Arbitrary real = 1.44;
 
-        Assert.AreEqual(144, real.Mantissa);
+        Assert.AreEqual(144, real.Significand);
         Assert.AreEqual(-2, real.Exponent);
         Assert.AreEqual("144E-2", real.ToString());
         Assert.AreEqual(1.44, (double)real, 0.00001);
@@ -102,7 +102,7 @@ public class ArbitraryTest {
 
         var result = first + second;
 
-        Assert.AreEqual(964, result.Mantissa);
+        Assert.AreEqual(964, result.Significand);
         Assert.AreEqual(-2, result.Exponent); 
     }
 
@@ -113,7 +113,7 @@ public class ArbitraryTest {
 
         var result = first - second;
 
-        Assert.AreEqual(676, result.Mantissa);
+        Assert.AreEqual(676, result.Significand);
         Assert.AreEqual(-2, result.Exponent); 
     }
 
@@ -124,7 +124,7 @@ public class ArbitraryTest {
 
         var result = first * second;
 
-        Assert.AreEqual(11808, result.Mantissa);
+        Assert.AreEqual(11808, result.Significand);
         Assert.AreEqual(-3, result.Exponent); 
     }
 
@@ -135,7 +135,7 @@ public class ArbitraryTest {
 
         var result = first / second;
 
-        Assert.AreEqual(5694, result.SetPrecision(4).Mantissa);
+        Assert.AreEqual(5694, result.SetPrecision(4).Significand);
         Assert.AreEqual(-3, result.SetPrecision(4).Exponent); 
     }
 
@@ -149,7 +149,7 @@ public class ArbitraryTest {
         var numerator = new Arbitrary(1, 0); //1
         Assert.AreEqual(0, numerator.Scale);
         var result = numerator.Divide(divisor, decimals);   // 0.333...
-        Assert.AreEqual(25, result.Mantissa.ToString().Length);
+        Assert.AreEqual(25, result.Significand.ToString().Length);
         Assert.AreEqual(decimals, result.Scale);
 
         // Larger numbers, result should have some whole parts
@@ -171,22 +171,22 @@ public class ArbitraryTest {
         Arbitrary first = new Arbitrary(144, -2); // 1.44
         
         var trunc = first.Truncate();
-        Assert.AreEqual(1, trunc.Mantissa);
+        Assert.AreEqual(1, trunc.Significand);
         Assert.AreEqual(0, trunc.Exponent);
 
         first = new Arbitrary(-27, -1);    // -2.7
         trunc = first.Truncate();
-        Assert.AreEqual(-2, trunc.Mantissa);
+        Assert.AreEqual(-2, trunc.Significand);
         Assert.AreEqual(0, trunc.Exponent);
 
         first = new Arbitrary(125, -3);    // 0.125
         trunc = first.Truncate();
-        Assert.AreEqual(0, trunc.Mantissa);
+        Assert.AreEqual(0, trunc.Significand);
         Assert.AreEqual(0, trunc.Exponent);
 
         first = 0;              // 0
         trunc = first.Truncate();
-        Assert.AreEqual(0, trunc.Mantissa);
+        Assert.AreEqual(0, trunc.Significand);
         Assert.AreEqual(0, trunc.Exponent);
     }
 
@@ -215,6 +215,20 @@ public class ArbitraryTest {
 
             Assert.AreEqual(values[i], (double)real, 0.0001);
             Assert.AreEqual(ceil[i], floored);
+        }
+    }
+
+    [TestMethod]
+    public void TestSqrt() {
+        var values = new double[] { 144, 196, 25, 1000000, 3136, 5625, 16, 576, 0.09, 0.25, 0.0025 };
+        var sqrt = new double[] { 12, 14, 5, 1000, 56, 75, 4, 24, 0.3, 0.5, 0.05 };
+
+        for (var i = 0; i < values.Length; i++) {
+            Arbitrary real = values[i];
+            var sqrted = real.Sqrt();
+
+            Assert.AreEqual(values[i], (double)real, 0.0001);
+            Assert.AreEqual(sqrt[i], sqrted);
         }
     }
 
