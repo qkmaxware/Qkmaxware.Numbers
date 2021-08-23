@@ -330,7 +330,7 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 	
 	// override object.GetHashCode
 	public override int GetHashCode() {
-		return HashCode.Combine(this.Significand, this.Exponent);
+		return (this.Significand, this.Exponent).GetHashCode();
 	}
 }
 

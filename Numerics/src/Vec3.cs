@@ -229,7 +229,7 @@ public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, I
     }
 
     public override int GetHashCode(){
-        return HashCode.Combine(this.X, this.Y, this.Z);
+        return (this.X, this.Y, this.Z).GetHashCode();
     }
 
     public override string ToString() {

@@ -87,7 +87,7 @@ public class Fraction<T> where T:IAddable<T, T>, ISubtractable<T,T>, IDividable<
         }
     }
     public override int GetHashCode() {
-        return HashCode.Combine(this.Numerator, this.Denominator);
+        return (this.Numerator, this.Denominator).GetHashCode();
     }
 
 }
