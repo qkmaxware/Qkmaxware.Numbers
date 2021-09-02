@@ -43,6 +43,15 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 		this.Significand = value;
 		this.Exponent = power;
 
+		// Guards
+		if (double.IsInfinity(this.Significand)) {
+			this.Exponent = 0;
+		} else if (double.IsNaN(this.Significand)) {
+			this.Exponent = 0;
+		} else if (this.Significand == 0) {
+			this.Exponent = 0;
+		}
+
 		if (forceNormalize) {
 			normalize();
 		}
