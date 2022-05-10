@@ -68,7 +68,6 @@ public interface IScalable<I, R> {
 public interface IVectorable<T> {
     public T ScalarNegation();
     public T ScalarSqrt();
-    public T ScalarScaleBy(T scaling);
     public T ScalarAddBy(T other);
     public T ScalarSubtractBy(T other);
     public T ScalarMultiplyBy(T other);
