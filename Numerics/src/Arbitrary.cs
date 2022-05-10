@@ -5,7 +5,7 @@ namespace Qkmaxware.Numbers {
 /// <summary>
 /// Arbitrary precision large Arbitrary number
 /// </summary>
-public struct Arbitrary : INumeric<Arbitrary>, IScalable<Arbitrary,Arbitrary> {
+public struct Arbitrary : IVectorable<Arbitrary>, INegatable<Arbitrary>, ISquareRootable<Arbitrary>, IAddable<Arbitrary,Arbitrary>, ISubtractable<Arbitrary,Arbitrary>, IMultiplyable<Arbitrary,Arbitrary>, IDividable<Arbitrary,Arbitrary>, IScalable<Arbitrary,Arbitrary> {
     /// <summary>
     /// A Arbitrary representing 0
     /// </summary>
@@ -397,6 +397,14 @@ public struct Arbitrary : INumeric<Arbitrary>, IScalable<Arbitrary,Arbitrary> {
     public Arbitrary DivideBy(Arbitrary rhs) {
         return this / rhs;
     }
+
+    public Arbitrary ScalarNegation() => this.Negate();
+    public Arbitrary ScalarSqrt() => this.Sqrt();
+    public Arbitrary ScalarScaleBy(Arbitrary scaling) => this.ScaleBy(scaling);
+    public Arbitrary ScalarAddBy(Arbitrary other) => this.Add(other);
+    public Arbitrary ScalarSubtractBy(Arbitrary other) => this.Subtract(other);
+    public Arbitrary ScalarMultiplyBy(Arbitrary other) => this.MultiplyBy(other);
+    public Arbitrary ScalarDivideBy(Arbitrary other) => this.DivideBy(other);
 
     // Source: http://mjs5.com/2016/01/20/c-biginteger-square-root-function/  Michael Steiner, Jan 2016
     // Found at https://stackoverflow.com/questions/3432412/calculate-square-root-of-a-biginteger-system-numerics-biginteger/6084813

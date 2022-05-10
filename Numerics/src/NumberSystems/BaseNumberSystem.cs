@@ -53,7 +53,7 @@ public abstract class BaseNumberSystem : NumberSystem {
                 var @char = value[charIndex];
                 var valueIndex = Array.IndexOf(charSet, @char);
                 if (valueIndex < 0) {
-                    throw new ArgumentException($"Character '{@char}' doesn't exist in the base 2 number system");
+                    throw new ArgumentException($"Character '{@char}' doesn't exist in the number system");
                 }
                 numeric += valueIndex * FastIPow(targetBase, i);
             }
@@ -65,8 +65,9 @@ public abstract class BaseNumberSystem : NumberSystem {
     public override string ToString(int value) {
         var charSet = GetCharacterSet();
         
-        // 32 is the worst cast buffer size for base 2 and int.MaxValue
-        int i = 32;
+        // 32 is the worst case buffer size for base 2 and int.MaxValue
+        var s = sizeof(int) * 8;
+        int i = s;
         char[] buffer = new char[i];
         int targetBase= charSet.Length;
 
@@ -76,8 +77,8 @@ public abstract class BaseNumberSystem : NumberSystem {
         }
         while (value > 0);
 
-        char[] result = new char[32 - i];
-        Array.Copy(buffer, i, result, 0, 32 - i);
+        char[] result = new char[s - i];
+        Array.Copy(buffer, i, result, 0, s - i);
 
         return new string(result);
     }

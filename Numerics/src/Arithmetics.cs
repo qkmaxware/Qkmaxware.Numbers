@@ -62,9 +62,17 @@ public interface IScalable<I, R> {
 }
 
 /// <summary>
-/// Interface for numerics types that support all basic arithmetic operators
+/// Interface for types that can be used within a vector
 /// </summary>
 /// <typeparam name="T">arithmetic type</typeparam>
-public interface INumeric<T> : INegatable<T>, ISquareRootable<T>, IAddable<T,T>, ISubtractable<T,T>, IMultiplyable<T,T>, IDividable<T,T> {}
+public interface IVectorable<T> {
+    public T ScalarNegation();
+    public T ScalarSqrt();
+    public T ScalarScaleBy(T scaling);
+    public T ScalarAddBy(T other);
+    public T ScalarSubtractBy(T other);
+    public T ScalarMultiplyBy(T other);
+    public T ScalarDivideBy(T other);
+}
 
 }

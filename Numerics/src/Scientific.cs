@@ -6,7 +6,7 @@ namespace Qkmaxware.Numbers {
 /// <summary>
 /// Double precision number in scientific notation
 /// </summary>
-public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific> {
+public class Scientific : IVectorable<Scientific>, INegatable<Scientific>, ISquareRootable<Scientific>, IAddable<Scientific,Scientific>, ISubtractable<Scientific,Scientific>, IMultiplyable<Scientific,Scientific>, IDividable<Scientific,Scientific>, IScalable<Scientific,Scientific> {
 	public static readonly Scientific Zero = new Scientific(0, 0);
 	public static readonly Scientific One = new Scientific(1, 0);
 
@@ -305,6 +305,14 @@ public class Scientific : INumeric<Scientific>, IScalable<Scientific,Scientific>
 		}
 		
 	}
+
+	public Scientific ScalarNegation() => this.Negate();
+    public Scientific ScalarSqrt() => this.Sqrt();
+    public Scientific ScalarScaleBy(Scientific scaling) => this.ScaleBy(scaling);
+    public Scientific ScalarAddBy(Scientific other) => this.Add(other);
+    public Scientific ScalarSubtractBy(Scientific other) => this.Subtract(other);
+    public Scientific ScalarMultiplyBy(Scientific other) => this.MultiplyBy(other);
+    public Scientific ScalarDivideBy(Scientific other) => this.DivideBy(other);
 
 	/// <summary>
 	/// Equality comparison of two scientific numbers

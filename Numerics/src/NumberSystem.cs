@@ -11,7 +11,7 @@ public abstract class NumberSystem {
     /// <returns>base 10 integer</returns>
     public abstract int Parse(string value);
     /// <summary>
-    /// Covnert a base 10 integer to a string representation in this number system
+    /// Convert a base 10 integer to a string representation in this number system
     /// </summary>
     /// <param name="value">base 10 value</param>
     /// <returns>string representation of the value in the this number system</returns>

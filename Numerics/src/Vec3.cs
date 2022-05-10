@@ -6,7 +6,7 @@ namespace Qkmaxware.Numbers {
 /// Abstract vector of 3 dimensions
 /// </summary>
 /// <typeparam name="T">quantity type for each axis</typeparam>
-public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, ISubtractable<T,T>, IMultiplyable<T,T>, IDividable<T,T>  {
+public class Vec3<T> where T:IVectorable<T>  {
     /// <summary>
     /// X Coordinate
     /// </summary>
@@ -25,16 +25,16 @@ public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, I
     /// </summary>    
     public T SqrLength {
         get {
-            var xx = X.MultiplyBy(X);
-            var yy = Y.MultiplyBy(Y);
-            var zz = Z.MultiplyBy(Z);
-            return xx.Add(yy).Add(zz);
+            var xx = X.ScalarMultiplyBy(X);
+            var yy = Y.ScalarMultiplyBy(Y);
+            var zz = Z.ScalarMultiplyBy(Z);
+            return xx.ScalarAddBy(yy).ScalarAddBy(zz);
         }
     }
     /// <summary>
     /// Length of the vector
     /// </summary>
-    public T Length => SqrLength.Sqrt();
+    public T Length => SqrLength.ScalarSqrt();
 
     /// <summary>
     /// Get a vector of unit length in the same direction
@@ -80,11 +80,11 @@ public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, I
     /// <param name="rhs">second vector</param>
     /// <returns>dot product</returns>
     public static T Dot(Vec3<T> lhs, Vec3<T> rhs) {
-        var xx = lhs.X.MultiplyBy(rhs.X);
-        var yy = lhs.Y.MultiplyBy(rhs.Y);
-        var zz = lhs.Z.MultiplyBy(rhs.Z);
+        var xx = lhs.X.ScalarMultiplyBy(rhs.X);
+        var yy = lhs.Y.ScalarMultiplyBy(rhs.Y);
+        var zz = lhs.Z.ScalarMultiplyBy(rhs.Z);
 
-        return xx.Add(yy).Add(zz);
+        return xx.ScalarAddBy(yy).ScalarAddBy(zz);
     }
 
     /// <summary>
@@ -94,16 +94,16 @@ public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, I
     /// <param name="rhs">second vector</param>
     /// <returns>cross product</returns>
     public static Vec3<T> Cross(Vec3<T> lhs, Vec3<T> rhs) {
-        var a2b3 = lhs.Y.MultiplyBy(rhs.Z);
-        var a3b2 = lhs.Z.MultiplyBy(rhs.Y);
-        var a1b3 = lhs.X.MultiplyBy(rhs.Z);
-        var a3b1 = lhs.Z.MultiplyBy(rhs.X);
-        var a1b2 = lhs.X.MultiplyBy(rhs.Y);
-        var a2b1 = lhs.Y.MultiplyBy(rhs.X);
+        var a2b3 = lhs.Y.ScalarMultiplyBy(rhs.Z);
+        var a3b2 = lhs.Z.ScalarMultiplyBy(rhs.Y);
+        var a1b3 = lhs.X.ScalarMultiplyBy(rhs.Z);
+        var a3b1 = lhs.Z.ScalarMultiplyBy(rhs.X);
+        var a1b2 = lhs.X.ScalarMultiplyBy(rhs.Y);
+        var a2b1 = lhs.Y.ScalarMultiplyBy(rhs.X);
 
-        var i = a2b3.Subtract(a3b2);
-        var j = a3b1.Subtract(a1b3);
-        var k = a1b2.Subtract(a2b1);
+        var i = a2b3.ScalarSubtractBy(a3b2);
+        var j = a3b1.ScalarSubtractBy(a1b3);
+        var k = a1b2.ScalarSubtractBy(a2b1);
 
         return new Vec3<T>(
             i,
@@ -132,9 +132,9 @@ public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, I
 
     public static Vec3<T> operator - (Vec3<T> rhs) {
         return new Vec3<T>(
-            x: rhs.X.Negate(),
-            y: rhs.Y.Negate(),
-            z: rhs.Z.Negate()
+            x: rhs.X.ScalarNegation(),
+            y: rhs.Y.ScalarNegation(),
+            z: rhs.Z.ScalarNegation()
         );
     }
 
@@ -144,41 +144,41 @@ public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, I
 
     public static Vec3<T> operator + (Vec3<T> lhs, Vec3<T> rhs) {
         return new Vec3<T>(
-            lhs.X.Add(rhs.X),
-            lhs.Y.Add(rhs.Y),
-            lhs.Z.Add(rhs.Z)
+            lhs.X.ScalarAddBy(rhs.X),
+            lhs.Y.ScalarAddBy(rhs.Y),
+            lhs.Z.ScalarAddBy(rhs.Z)
         );
     } 
 
     public static Vec3<T> operator - (Vec3<T> lhs, Vec3<T> rhs) {
         return new Vec3<T>(
-            lhs.X.Subtract(rhs.X),
-            lhs.Y.Subtract(rhs.Y),
-            lhs.Z.Subtract(rhs.Z)
+            lhs.X.ScalarSubtractBy(rhs.X),
+            lhs.Y.ScalarSubtractBy(rhs.Y),
+            lhs.Z.ScalarSubtractBy(rhs.Z)
         );
     } 
 
     public static Vec3<T> operator * (T lhs, Vec3<T> rhs) {
         return new Vec3<T>(
-            lhs.MultiplyBy(rhs.X),
-            lhs.MultiplyBy(rhs.Y),
-            lhs.MultiplyBy(rhs.Z)
+            lhs.ScalarMultiplyBy(rhs.X),
+            lhs.ScalarMultiplyBy(rhs.Y),
+            lhs.ScalarMultiplyBy(rhs.Z)
         );
     }
 
     public static Vec3<T> operator * (Vec3<T> lhs, T rhs) {
         return new Vec3<T>(
-            lhs.X.MultiplyBy(rhs),
-            lhs.Y.MultiplyBy(rhs),
-            lhs.Z.MultiplyBy(rhs)
+            lhs.X.ScalarMultiplyBy(rhs),
+            lhs.Y.ScalarMultiplyBy(rhs),
+            lhs.Z.ScalarMultiplyBy(rhs)
         );
     }
 
     public static Vec3<T> operator / (Vec3<T> lhs, T rhs) {
         return new Vec3<T>(
-            lhs.X.DivideBy(rhs),
-            lhs.Y.DivideBy(rhs),
-            lhs.Z.DivideBy(rhs)
+            lhs.X.ScalarDivideBy(rhs),
+            lhs.Y.ScalarDivideBy(rhs),
+            lhs.Z.ScalarDivideBy(rhs)
         );
     }
 
@@ -200,7 +200,7 @@ public class Vec3<T> where T:INegatable<T>, ISquareRootable<T>, IAddable<T,T>, I
     /// <param name="converter">type conversion function</param>
     /// <typeparam name="U">new type</typeparam>
     /// <returns>new vector of the appropriate type</returns>
-    public Vec3<U> Map<U>(Func<T, U> converter) where U:INegatable<U>, ISquareRootable<U>, IAddable<U,U>, ISubtractable<U,U>, IMultiplyable<U,U>, IDividable<U,U> {
+    public Vec3<U> Map<U>(Func<T, U> converter) where U:IVectorable<U> {
         return new Vec3<U>(
             converter(this.X),
             converter(this.Y),
